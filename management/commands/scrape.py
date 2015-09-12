@@ -24,10 +24,32 @@ CAPE_HEADERS = {           "Host": 'cape.ucsd.edu',
                  "Cache-Control": "no-cache"
     }
 
+RATE_MY_PROF_PART1 = 'http://www.ratemyprofessors.com/search.jsp?query='
+RATE_MY_PROF_PART2 = '%2C+'
+RATE_MY_PROF_PART3 = '+UCSD'
+
+RMP_HEADERS = {           "Host": 'ratemyprofessors.com',
+                        "Accept": ','.join([
+                                    "text/html",
+                                    "application/xhtml+xml",
+                                    "application/xml;q=0.9,*/*;q=0.8"]),
+               "Accept-Language": "en-US,en;q=0.5",
+                    "User-Agent":  ' '.join([
+                                    "Mozilla/5.0]",
+                                    "(Macintosh; Intel Mac OS X 10_10_2)",
+                                    "AppleWebKit/600.3.18",
+                                    "(KHTML, like Gecko)",
+                                    "Version/8.0.3 Safari/600.3.18"]),
+                 "Cache-Control": "no-cache"
+    }
+
 class Command(BaseCommand):
     help = 'Scrapes sites and stores them in the database.'
 
     def handle(self, *args, **options):
+        self.stdout.write('\n Clearing old data, please stand by')
+        SDClass.objects.all().delete()
+
         self.stdout.write('\nScraping, please stand by')
 
         url = 'https://www.cse.ucsd.edu/CourseOfferings'
@@ -35,15 +57,7 @@ class Command(BaseCommand):
         r = requests.get(url)
         root = html.fromstring(r.content)
 
-        #table = root.xpath('//*[@id="node-2836"]/div[2]/table/tbody/tr[2]/td[1]/a/text()')
-
         table = root.xpath('//*[@id="node-2836"]/div[2]/table/tbody/tr')
-        #//*[@id="node-2836"]/div[2]/table/tbody/tr[2]/td[1]/a
-
-        #print table[0].strip()
-
-        #print (table[1].text_content())
-
 
         #Handle CSE Page row by row
         for row in table[1:]:
@@ -62,7 +76,7 @@ class Command(BaseCommand):
 
             #Some classes have an additional p tag to make things annoying.
             else:
-                titleSearch = row.xpath('td[1]/a/text()')
+                titleSearch = row.xpath('td[1]/p/a/text()')
                 if (len(titleSearch) > 0):
                     title = titleSearch[0].strip()
 
@@ -122,41 +136,67 @@ class Command(BaseCommand):
             #Storing class data in database.
             rowClass.save()
 
-            #Now that we've gotten names and quarters, we need to create Teacher objects and Class objects and assign them.
+            #Now that we've gotten names and quarters, we need to create Teacher objects and assign them to the class.
             for teacherName in teacherDict:
                 print "trying " + teacherName
-
 
                 #For site verification.
                 certFile = 'cacert.pem'
 
+                #First, we scrape Cape data.
                 capeUrl = CAPE_PART1 + teacherName + CAPE_PART2 + title.replace(" ", "")
-
-                #webbrowser.open_new_tab(capeUrl)
 
                 #Get cape data for each teacher per class.
                 #Cape needs headers to work.
                 request = requests.get(capeUrl, verify=certFile, headers=CAPE_HEADERS)
-                #request = requests.get('https://cape.ucsd.edu/responses/Results.aspx?Name=Marx&CourseNumber=CSE3', verify=certFile, headers = CAPE_HEADERS)
 
                 capeRoot = html.fromstring(request.content)
                             #print(etree.tostring(row, pretty_print=True))
 
-                #
-                capeRow = capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs"]/tbody/tr[1]')[0]
-                #print(etree.tostring(capeRow, pretty_print=True))
+                #First checking if the page returned results. Then parse results.
+                if (len(capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl01_lblEmptyData"]/text()')) == 0):
+                    capeRow = capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs"]/tbody/tr[1]')[0]
+                    #print(etree.tostring(capeRow, pretty_print=True))
 
-                fullName = capeRow.xpath('td[1]/text()')[0].strip()
-                #//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblCAPEsSubmitted"]
+                    fullName = capeRow.xpath('td[1]/text()')[0].strip()
+                    #//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblCAPEsSubmitted"]
 
-                #To get response rate, we divide number of students by responses.
-                responseRate = round((float(capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblCAPEsSubmitted"]/text()')[0].strip()) / float(capeRow.xpath('td[4]/text()')[0].strip())), 2)
+                    #To get response rate, we divide number of students by responses.
+                    responseRate = round((float(capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblCAPEsSubmitted"]/text()')[0].strip()) / float(capeRow.xpath('td[4]/text()')[0].strip())), 2)
 
-                recommendRate = float(capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblPercentRecommendCourse"]/text()')[0].strip().replace(' %', ''))
+                    recommendRate = float(capeRoot.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblPercentRecommendCourse"]/text()')[0].strip().replace(' %', ''))
 
-                averageGrade = capeRow.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblGradeExpected"]/text()')[0].strip()
+                    averageGrade = capeRow.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvCAPEs_ctl02_lblGradeExpected"]/text()')[0].strip()
 
-                print str(teacherDict[teacherName]) + " " + str(recommendRate) + " " + str(responseRate) + " " + str(averageGrade)
+                    print str(teacherDict[teacherName]) + " " + str(recommendRate) + " " + str(responseRate) + " " + str(averageGrade)
+
+                else:
+                    fullName = teacherName
+                    rating = 0
+                    responseRate = 0
+                    averageGrade = "N/A"
+
+                '''
+                #Cape is done. Now grab RateMyProf data.
+
+                namePieces=fullName.split(', ')
+
+                RMPUrl = RATE_MY_PROF_PART1 + namePieces[0] + RATE_MY_PROF_PART2 + namePieces[1] + RATE_MY_PROF_PART3
+
+                #Get rate my professor data for each teacher per class. Step 1: Search for professor. Step 2: Process results.
+                #Rate my Professor needs headers to work.
+                request = requests.get(RMPUrl, verify=certFile, headers=RMP_HEADERS)
+
+                RMPRoot = html.fromstring(request.content)
+                            #print(etree.tostring(row, pretty_print=True))
+
+                #First checking if the page returned results. Then parse results.
+                if (len(capeRoot.xpath('//*[@id="searchResultsBox"]/div/div/div[3]/text()')) == 0):
+
+
+                else:
+                    RMPRating = 0'''
+
 
                 print fullName + " complete!"
                 rowClass.teacher_set.create(name=fullName, quarters=teacherDict[teacherName], rating = recommendRate, responseRate = responseRate, averageGrade = averageGrade)
