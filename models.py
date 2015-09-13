@@ -37,5 +37,8 @@ class Teacher(models.Model):
     #quarterFlags
     quarters = models.IntegerField(default=0)
 
+    class Meta:
+        ordering = ["aggregateRating"]
+
     def __unicode__(self):
         return self.name + " " + self.rating + " " + self.averageGrade + " " + self.responseRate + " " + self.quarters + " " + self.specificClass
