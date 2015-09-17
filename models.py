@@ -22,8 +22,11 @@ class Teacher(models.Model):
     #First rating of teacher for that class on CAPE
     capeRating = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
-    #RateMyProfessor overall rating
+    #RateMyProfessor class rating
     rateMyProfRating = models.DecimalField(max_digits=4, decimal_places=1, default=0)
+
+    #RateMyProfessor overall rating.
+    rateMyProfRatingOverall = models.DecimalField(max_digits=4, decimal_places=1, default=0)
 
     #Average grade for that first class on CAPE
     averageGrade = models.CharField(max_length=10, default="")
@@ -36,6 +39,10 @@ class Teacher(models.Model):
 
     #quarterFlags
     quarters = models.IntegerField(default=0)
+
+    CAPELink = models.CharField(max_length=200, default="")
+
+    RMPLink = models.CharField(max_length=75, default="")
 
     class Meta:
         ordering = ["aggregateRating"]
