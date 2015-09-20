@@ -158,7 +158,7 @@ def processTeacherForClass(row):
         for name in teacherNames:
             name = name.strip()
             #Some quarters have no teachers. We don't want to store that or staff.
-            if name != "" and name != "Staff" and name != 'See Schedule of Classes each quarter	' and name != 'Various':
+            if name != "" and name != 'See Schedule of Classes each quarter	' and name != 'Various':
                 # If name is already in the dictionary, just add the flag.
                 if name in teacherDict:
                     # Fall = 4, Winter = 2, Spring = 1, need to set flags for appropriate quarters.

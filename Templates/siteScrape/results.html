@@ -1,0 +1,11 @@
+<h1>Results </h1>
+
+<ul>
+{% for specificClass in classes %}
+    <h2>{{  specificClass.title}}</h2>
+    {% for teacher in specificClass.teacher_set.all %}
+        <li>{{ teacher.name }} -- {{ teacher.aggregateRating }}</li>
+    {% endfor %}
+{% endfor %}
+
+</ul>
