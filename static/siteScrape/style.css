@@ -1,6 +1,21 @@
+h1 {
+    font-family: 'Open Sans', sans-serif;
+    text-align:center;
+}
+
+form{
+    text-align:center;
+    font-family: 'Open Sans', sans-serif;
+}
+
+li {
+    font-family: 'Open Sans', sans-serif;
+}
+
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
+    font-family: 'Open Sans', sans-serif;
 }
 th, td {
     padding: 5px;

@@ -1,10 +1,17 @@
 {% load staticfiles %}
 {% load QuarterGetter %}
-
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
 <link rel="stylesheet" type="text/css" href="{% static 'siteScrape/style.css' %}" xmlns="http://www.w3.org/1999/html"/>
 
 <h1>Results </h1>
+
+<form action="." method="get">
+    Input Classes:<br>
+    <input type="text" name="classes">
+    <br>
+    <input type="submit" value="Submit">
+</form>
 
 <ul>
 <table style="width:100%">
@@ -22,7 +29,27 @@
                 <!-- Fall Classes-->
                 {% for teacher in specificClass.teacher_set.all reversed %}
                     {% if teacher.quarters|getFall %}
-                        <li>{{ teacher.name }} -- {{ teacher.aggregateRating }}
+                        <!--Check Cape data-->
+                        {% if teacher.capeRating|hasData %}
+                            <a href={{  teacher.CAPELink }}> <li>{{ teacher.name }} -- CAPE: {{ teacher.capeRating }}</a>
+                        {% else %}
+                            <li>{{ teacher.name }} -- CAPE: No Data
+                        {% endif %}
+
+                        <!--Check RMP Class Data -->
+                        {% if teacher.rateMyProfRating|hasData %}
+                            <a href={{  teacher.RMPLink }}> <br> RMP Class Rating: {{ teacher.rateMyProfRating }} </a>
+                        {% else %}
+                            <br> RMP Class Rating: No Data
+                        {% endif %}
+
+                        <!--Check RMP Overall Class Data -->
+                        {% if teacher.rateMyProfRatingOverall|hasData %}
+                            <a href={{  teacher.RMPLink }}> <br> RMP Overall Rating: {{ teacher.rateMyProfRatingOverall }} </a>
+                        {% else %}
+                            <br> RMP Overall Rating: No Data
+                        {% endif %}
+                            </li>
                     {% endif %}
                 {% endfor %}
             </td>
@@ -30,7 +57,27 @@
                 <!-- Winter Classes-->
                 {% for teacher in specificClass.teacher_set.all reversed %}
                     {% if teacher.quarters|getWinter%}
-                        <li>{{ teacher.name }} -- {{ teacher.aggregateRating }}</li>
+                        <!--Check Cape data-->
+                        {% if teacher.capeRating|hasData %}
+                            <a href={{  teacher.CAPELink }}> <li>{{ teacher.name }} -- CAPE: {{ teacher.capeRating }}</a>
+                        {% else %}
+                            <li>{{ teacher.name }} -- CAPE: No Data
+                        {% endif %}
+
+                        <!--Check RMP Class Data -->
+                        {% if teacher.rateMyProfRating|hasData %}
+                            <a href={{  teacher.RMPLink }}> <br> RMP Class Rating: {{ teacher.rateMyProfRating }} </a>
+                        {% else %}
+                            <br> RMP Class Rating: No Data
+                        {% endif %}
+
+                        <!--Check RMP Overall Class Data -->
+                        {% if teacher.rateMyProfRatingOverall|hasData %}
+                            <a href={{  teacher.RMPLink }}> <br> RMP Overall Rating: {{ teacher.rateMyProfRatingOverall }} </a>
+                        {% else %}
+                            <br> RMP Overall Rating: No Data
+                        {% endif %}
+                            </li>
                     {% endif %}
                 {% endfor %}
             </td>
@@ -38,7 +85,27 @@
                 <!-- Spring Classes-->
                 {% for teacher in specificClass.teacher_set.all reversed %}
                     {% if teacher.quarters|getSpring%}
-                        <li>{{ teacher.name }} -- {{ teacher.aggregateRating }}</li>
+                        <!--Check Cape data-->
+                        {% if teacher.capeRating|hasData %}
+                            <a href={{  teacher.CAPELink }}> <li>{{ teacher.name }} -- CAPE: {{ teacher.capeRating }}</a>
+                        {% else %}
+                            <li>{{ teacher.name }} -- CAPE: No Data
+                        {% endif %}
+
+                        <!--Check RMP Class Data -->
+                        {% if teacher.rateMyProfRating|hasData %}
+                            <a href={{  teacher.RMPLink }}> <br> RMP Class Rating: {{ teacher.rateMyProfRating }} </a>
+                        {% else %}
+                            <br> RMP Class Rating: No Data
+                        {% endif %}
+
+                        <!--Check RMP Overall Class Data -->
+                        {% if teacher.rateMyProfRatingOverall|hasData %}
+                            <a href={{  teacher.RMPLink }}> <br> RMP Overall Rating: {{ teacher.rateMyProfRatingOverall }} </a>
+                        {% else %}
+                            <br> RMP Overall Rating: No Data
+                        {% endif %}
+                            </li>
                     {% endif %}
                 {% endfor %}
             </td>
